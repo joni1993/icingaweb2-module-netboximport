@@ -36,7 +36,7 @@ class ImportSource extends ImportSourceHook {
     }
 
     private function fetchObjects($ressource, $activeOnly, $autoflatten_elements, $additionalKeysCallback = null) {
-        $objects = $this->api->get($ressource);
+        $objects = $this->api->get($ressource,$this->getFilters());
 
        //Filter only active objects if setting is set
         $objects = array_filter($objects, function ($object) use ($activeOnly) {
@@ -201,6 +201,11 @@ class ImportSource extends ImportSourceHook {
         $form->addElement('YesNo', 'importvirtualmachines', array(
             'label'       => $form->translate('Import virtual machines'),
             'description' => $form->translate('Import virtual machines (virtualization/virtual-machines in netbox).'),
+	));
+
+	$form->addElement('text', 'filters', array(
+            'label'        => $form->translate("Filterstring"),
+            'description'  => $form->translate("Filters to be applied in API request (e.g. role=Server"),
         ));
 
         $form->addElement('YesNo', 'activeonly', array(
@@ -255,6 +260,11 @@ class ImportSource extends ImportSourceHook {
 
         return array_merge(...$objects);
 
+    }
+
+    private function getFilters() {
+       parse_str($this->getSetting('filters'),$filters_array);
+       return $filters_array;
     }
 
     public function listColumns() {
